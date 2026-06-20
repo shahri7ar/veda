@@ -45,39 +45,18 @@ jobs:
       - name: Clean project
         run: ./gradlew clean --no-daemon
 
-      - name: Generate release keystore (self-signed)
-        run: |
-          keytool -genkeypair \
-            -keystore app/vibemusic-release.keystore \
-            -alias vibemusic \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass vibemusic -keypass vibemusic \
-            -dname "CN=VibeMusic, OU=VibeMusic, O=VibeMusic, L=Anywhere, ST=Anywhere, C=US"
-
       - name: Build Debug APK
         run: ./gradlew --no-daemon -x lint assembleDebug --stacktrace
 
-      - name: Build Release APK
-        run: ./gradlew --no-daemon -x lint assembleRelease --stacktrace
-
-      - name: Locate APKs
+      - name: Locate APK
         id: locate
         run: |
           DEBUG_APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
-          RELEASE_APK=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
           echo "debug_apk=$DEBUG_APK" >> $GITHUB_OUTPUT
-          echo "release_apk=$RELEASE_APK" >> $GITHUB_OUTPUT
-          echo "Debug APK: $DEBUG_APK"
-          echo "Release APK: $RELEASE_APK"
+          echo "APK found at: $DEBUG_APK"
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: VibeMusic-debug
           path: ${{ steps.locate.outputs.debug_apk }}
-
-      - name: Upload release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: VibeMusic-release
-          path: ${{ steps.locate.outputs.release_apk }}
