@@ -26,19 +26,12 @@ jobs:
       - name: Setup local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-      # 👇 حذف کامل ارجاع‌های آیکون از مانیفست و ویجت
-      - name: Remove launcher icon references from XML files
+      # 👇 این مرحله حتماً اجرا می‌شود و ارجاع‌های آیکون را پاک می‌کند
+      - name: Remove launcher icon references from AndroidManifest.xml
         run: |
-          # حذف از AndroidManifest.xml
           sed -i 's/android:icon="[^"]*"//g' app/src/main/AndroidManifest.xml
           sed -i 's/android:roundIcon="[^"]*"//g' app/src/main/AndroidManifest.xml
-          
-          # حذف از فایل widget (اگر وجود داشته باشد)
-          if [ -f app/src/main/res/xml/music_widget_info.xml ]; then
-            sed -i 's/android:icon="[^"]*"//g' app/src/main/res/xml/music_widget_info.xml
-          fi
-          
-          echo "✅ Icon references removed."
+          echo "✅ Icon references removed from AndroidManifest.xml"
 
       - name: Generate Gradle Wrapper
         run: |
