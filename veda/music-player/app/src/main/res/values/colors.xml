@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="vibe_ink">#FF0F0F14</color>
+    <color name="vibe_surface">#FF16161D</color>
+    <color name="vibe_raised">#FF1E1E27</color>
+    <color name="vibe_primary">#FFB8A9E8</color>
+</resources>
