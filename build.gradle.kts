@@ -1,7 +1,31 @@
-// Top-level build file
-plugins {
-    id("com.android.application") version "8.2.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
-    id("com.google.devtools.ksp") version "1.9.22-1.0.16" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22" apply false
+android {
+    // ... سایر تنظیمات ...
+    
+    buildTypes {
+        debug {
+            isMinifyEnabled = false
+            isDebuggable = true
+        }
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isDebuggable = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName("release")  // اگر signingConfig تعریف کرده‌اید
+        }
+    }
+}
+
+// اگر signingConfig تعریف نشده، می‌توانید از debug signing استفاده کنید (برای تست)
+// در غیر این صورت، یک signingConfig تعریف کنید:
+signingConfigs {
+    create("release") {
+        storeFile = file("vibemusic-release.keystore")
+        storePassword = "vibemusic"
+        keyAlias = "vibemusic"
+        keyPassword = "vibemusic"
+    }
 }
