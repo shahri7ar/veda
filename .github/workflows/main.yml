@@ -26,24 +26,7 @@ jobs:
       - name: Setup local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-      # 👇 حذف ارجاع آیکون از فایل ویجت (مهم!)
-      - name: Fix widget icon reference
-        run: |
-          if [ -f app/src/main/res/xml/music_widget_info.xml ]; then
-            sed -i '/android:icon=/d' app/src/main/res/xml/music_widget_info.xml
-            echo "✅ Widget icon line removed"
-          else
-            echo "⚠️ Widget file not found, skipping"
-          fi
-
-      # 👇 حذف ارجاع آیکون از AndroidManifest.xml
-      - name: Fix manifest icon references
-        run: |
-          sed -i '/android:icon=/d' app/src/main/AndroidManifest.xml
-          sed -i '/android:roundIcon=/d' app/src/main/AndroidManifest.xml
-          echo "✅ Manifest icon lines removed"
-
-      - name: Generate Gradle Wrapper
+      - name: Prepare Gradle Wrapper (version 8.5)
         run: |
           if [ ! -f gradlew ]; then
             gradle wrapper --gradle-version 8.5
@@ -58,6 +41,9 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Clean project
+        run: ./gradlew clean --no-daemon
 
       - name: Generate release keystore
         run: |
