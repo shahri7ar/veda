@@ -6,7 +6,8 @@
     android:resizeMode="horizontal|vertical"
     android:minResizeWidth="200dp"
     android:minResizeHeight="100dp"
-    android:previewImage="@mipmap/ic_launcher"
+    android:icon="@mipmap/veda"
+    android:previewImage="@mipmap/veda"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen"
     android:description="@string/widget_description" />
