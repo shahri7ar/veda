@@ -26,11 +26,18 @@ jobs:
       - name: Setup local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-      # 👇 THIS GENERATES THE MISSING GRADLE WRAPPER FILES
+      # 👇 NEW STEP: Remove missing icon references from AndroidManifest.xml
+      - name: Fix missing launcher icons
+        run: |
+          if [ -f app/src/main/AndroidManifest.xml ]; then
+            sed -i 's/android:icon="@mipmap\/ic_launcher"//g' app/src/main/AndroidManifest.xml
+            sed -i 's/android:roundIcon="@mipmap\/ic_launcher_round"//g' app/src/main/AndroidManifest.xml
+            echo "Manifest patched to remove missing icon references."
+          fi
+
       - name: Generate Gradle Wrapper
         run: |
           if [ ! -f gradlew ]; then
-            echo "gradlew not found, generating it..."
             gradle wrapper --gradle-version 8.5
           fi
           chmod +x gradlew
