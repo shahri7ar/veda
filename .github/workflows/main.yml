@@ -1,43 +1,84 @@
 name: Build VibeMusic APK
 
 on:
-workflow_dispatch:
-push:
-branches:
-- main
-- master
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
-```
-steps:
-  - uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  - uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: 17
-      cache: gradle
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-  - name: Verify Gradle Wrapper
-    run: |
-      ls -la
-      test -f gradlew || (echo "gradlew missing" && exit 1)
-      chmod +x gradlew
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-  - name: Show Wrapper Version
-    run: |
-      ./gradlew --version
+      - name: Setup local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-  - name: Build Debug APK
-    run: |
-      ./gradlew clean assembleDebug --stacktrace --warning-mode all
+      # در صورت وجود gradlew، آن را اجرایی می‌کنیم، در غیر این صورت با Gradle 8.5 wrapper می‌سازیم
+      - name: Prepare Gradle Wrapper (version 8.5)
+        run: |
+          if [ ! -f gradlew ]; then
+            gradle wrapper --gradle-version 8.5
+          fi
+          chmod +x gradlew
+          # اطمینان از اینکه wrapper.properties به 8.5 اشاره کند
+          sed -i 's/gradle-9.*/gradle-8.5-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
 
-  - name: Upload APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: VibeMusic-debug
-      path: app/build/outputs/apk/debug/*.apk
-```
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Clean project (to avoid mutation issues)
+        run: ./gradlew clean --no-daemon
+
+      - name: Generate release keystore
+        run: |
+          keytool -genkeypair \
+            -keystore app/vibemusic-release.keystore \
+            -alias vibemusic \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass vibemusic -keypass vibemusic \
+            -dname "CN=VibeMusic, OU=VibeMusic, O=VibeMusic, L=Anywhere, ST=Anywhere, C=US"
+
+      - name: Build Debug APK
+        run: ./gradlew --no-daemon -x lint assembleDebug --stacktrace
+
+      - name: Build Release APK
+        run: ./gradlew --no-daemon -x lint assembleRelease --stacktrace
+
+      - name: Locate APKs
+        id: locate
+        run: |
+          DEBUG_APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
+          RELEASE_APK=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+          echo "debug_apk=$DEBUG_APK" >> $GITHUB_OUTPUT
+          echo "release_apk=$RELEASE_APK" >> $GITHUB_OUTPUT
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VibeMusic-debug
+          path: ${{ steps.locate.outputs.debug_apk }}
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VibeMusic-release
+          path: ${{ steps.locate.outputs.release_apk }}
