@@ -45,7 +45,7 @@ jobs:
       - name: Clean project
         run: ./gradlew clean --no-daemon
 
-      - name: Generate release keystore
+      - name: Generate release keystore (self-signed)
         run: |
           keytool -genkeypair \
             -keystore app/vibemusic-release.keystore \
@@ -67,6 +67,8 @@ jobs:
           RELEASE_APK=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
           echo "debug_apk=$DEBUG_APK" >> $GITHUB_OUTPUT
           echo "release_apk=$RELEASE_APK" >> $GITHUB_OUTPUT
+          echo "Debug APK: $DEBUG_APK"
+          echo "Release APK: $RELEASE_APK"
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
