@@ -1,4 +1,4 @@
-# VibeMusic v2.0.0 — Offline Android Music Player (ViMusic-Inspired UI)
+# Veda v2.0.0 — Offline Android Music Player (ViMusic-Inspired UI)
 
 A **core offline music player** for Android with **SMB/FTP streaming as optional modules**, featuring a faithful **ViMusic-style dark UI** built with Jetpack Compose.
 
